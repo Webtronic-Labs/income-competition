@@ -1,24 +1,42 @@
 <script>
 import { mapActions } from 'pinia'
 import useUserStore from '@/stores/user'
+import useSnackbarStore from '@/stores/snackbar'
+import WelcomeHeader from '../components/WelcomeHeader.vue'
+import AuthFormInput from '../components/AuthFormInput.vue'
+import AuthFormButton from '../components/AuthFormButton.vue'
 
 export default {
   name: 'Login',
+  components: {
+    WelcomeHeader,
+    AuthFormInput,
+    AuthFormButton
+  },
   data() {
     return {
       email: '',
-      password: ''
+      password: '',
+      isLoading: false
     }
   },
   methods: {
     ...mapActions(useUserStore, ['signIn']),
-    async handleSubmit({ target: form }) {
-      if (form.checkValidity()) {
+    ...mapActions(useSnackbarStore, ['showMSG']),
+    async submitHandler($event) {
+      if ($event.target.checkValidity()) {
         try {
+          this.isLoading = true
           await this.signIn({ email: this.email, password: this.password })
+          $event.target.reset()
           this.$router.push({ path: '/' })
         } catch (error) {
           console.log(error)
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            this.showMSG('error', 'Invalid email or password!')
+          }
+        } finally {
+          this.isLoading = false
         }
       }
     }
@@ -27,60 +45,31 @@ export default {
 </script>
 
 <template>
-  <header class="bg-gray-700 text-fuchsia-200 h-64 flex items-center justify-center">
-    <h1>RANKING</h1>
-  </header>
-  <main class="bg-red-500 text-gray-100 py-4">
-    <h2 class="text-center mb-4">LOGIN</h2>
-    <form
-      class="mx-auto w-4/5 space-y-10"
-      @submit.prevent="handleSubmit"
-      role="form"
-      autocomplete="off"
-    >
-      <div class="relative flex flex-col">
-        <input
-          type="email"
+  <WelcomeHeader />
+  <main class="bg-rose-600 text-gray-300 py-4 grow">
+    <div class="mx-auto w-80">
+      <h2 class="font-medium mb-4">LOGIN</h2>
+      <form class="space-y-10" role="form" autocomplete="off" @submit.prevent="submitHandler">
+        <AuthFormInput
           id="email"
-          class="peer h-12 rounded-md bg-transparent px-3 placeholder-transparent outline-none border-2"
           placeholder="Email"
-          required
+          :required="true"
+          type="email"
           v-model="email"
         />
-        <label
-          for="email"
-          class="absolute top-0 bottom-0 left-3 m-auto h-max -translate-y-6 bg-red-500 p-1 text-xs text-opacity-60 peer-placeholder-shown:-translate-y-0 peer-placeholder-shown:text-base peer-focus:-translate-y-6 peer-focus:text-xs"
-        >
-          Email
-        </label>
-      </div>
-      <div class="relative flex flex-col">
-        <input
-          type="password"
+        <AuthFormInput
           id="password"
-          class="peer h-12 rounded-md bg-transparent px-3 placeholder-transparent outline-none border-2"
+          :minlength="6"
           placeholder="Password"
-          required
-          minlength="6"
+          :required="true"
+          type="password"
           v-model="password"
         />
-        <label
-          for="password"
-          class="absolute top-0 bottom-0 left-3 m-auto h-max -translate-y-6 bg-red-500 p-1 text-xs text-opacity-60 peer-placeholder-shown:-translate-y-0 peer-placeholder-shown:text-base peer-focus:-translate-y-6 peer-focus:text-xs"
-        >
-          Password
-        </label>
-      </div>
-      <input
-        className="mt-8 h-12 w-full rounded-md bg-gray-900 text-sm font-medium tracking-wider text-white shadow-md outline-none disabled:opacity-75"
-        type="submit"
-        value="LOGIN"
-      />
-    </form>
+        <AuthFormButton content="LOGIN" :isLoading="isLoading" />
+      </form>
+      <router-link to="/register" class="block font-medium tracking-wider text-center mt-6">
+        REGISTER
+      </router-link>
+    </div>
   </main>
-  <footer class="bg-red-500 h-full text-center py-4">
-    <router-link to="/register" className="text-sm font-medium tracking-wider text-white">
-      REGISTER
-    </router-link>
-  </footer>
 </template>

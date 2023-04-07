@@ -1,13 +1,17 @@
 <script>
-import { mapWritableState } from 'pinia'
+import { mapState, mapWritableState } from 'pinia'
 import { auth, usersCollection } from '@/includes/firebase'
 import useUserStore from '@/stores/user'
 import Backdrop from '@/components/Backdrop.vue'
+import Snackbar from '@/components/Snackbar.vue'
+import useBackdropStore from '@/stores/backdrop'
+import useSnackbarStore from '@/stores/snackbar'
 
 export default {
   name: 'App',
   components: {
-    Backdrop
+    Backdrop,
+    Snackbar
   },
   data() {
     return {
@@ -15,6 +19,8 @@ export default {
     }
   },
   computed: {
+    ...mapState(useBackdropStore, { isBackdropOpen: 'isOpen' }),
+    ...mapState(useSnackbarStore, { isSnackbarOpen: 'isOpen' }),
     ...mapWritableState(useUserStore, [
       'id',
       'fullName',
@@ -63,6 +69,7 @@ export default {
 </script>
 
 <template>
-  <Backdrop />
+  <Backdrop v-if="isBackdropOpen" />
+  <Snackbar v-if="isSnackbarOpen" />
   <RouterView />
 </template>

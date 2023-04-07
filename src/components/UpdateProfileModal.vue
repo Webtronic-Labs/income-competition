@@ -1,7 +1,8 @@
 <script>
-import { mapState, mapWritableState } from 'pinia'
+import { mapActions, mapState, mapWritableState } from 'pinia'
 import { storage, usersCollection } from '@/includes/firebase'
 import useBackdropStore from '@/stores/backdrop'
+import useSnackbarStore from '@/stores/snackbar'
 import useModalStore from '@/stores/modal'
 import useUserStore from '@/stores/user'
 
@@ -21,6 +22,7 @@ export default {
     ...mapWritableState(useModalStore, ['isUpdateProfileModalOpen'])
   },
   methods: {
+    ...mapActions(useSnackbarStore, ['showMSG']),
     async deleteThumbnail(avatarStorageName) {
       const storageNameToDelete = avatarStorageName ?? this.storageName
 
@@ -36,7 +38,7 @@ export default {
         }
       }
     },
-    async handleCancel() {
+    async cancelHandler() {
       if (this.storageName) {
         await this.deleteThumbnail()
       }
@@ -44,7 +46,7 @@ export default {
       this.isUpdateProfileModalOpen = false
       this.isOpen = false
     },
-    async handleUpdate() {
+    async updateHandler() {
       if (!this.storageName) {
         return
       }
@@ -61,15 +63,17 @@ export default {
           { merge: true }
         )
 
-        if (avatarPrev.storageName) {
+        if (avatarPrev?.storageName) {
           await this.deleteThumbnail(avatarPrev.storageName)
         }
 
+        this.showMSG('success', 'Profile picture successfully updated!')
+        this.loadData()
         this.isOpen = false
         this.isUpdateProfileModalOpen = false
-        this.loadData()
       } catch (error) {
         console.log(error)
+        this.showMSG('error', 'Something went wrong!')
       }
     },
     upload(event) {
@@ -109,7 +113,7 @@ export default {
   mounted() {
     this.isOpen = true
     this.closeHandler = () => {
-      this.handleCancel()
+      this.cancelHandler()
     }
   },
   unmounted() {
@@ -123,8 +127,8 @@ export default {
     class="absolute left-0 right-0 mx-auto flex flex-col items-center gap-2 py-6 px-4 bg-white mt-16 rounded-md w-80 z-50"
   >
     <div
-      class="flex items-center justify-center min-h-max h-32 w-full rounded-md bg-gray-300 text-gray-400 hover:bg-red-300 hover:text-gray-100"
-      :class="{ 'bg-red-300': isDragOver }"
+      class="bg-gray-200 min-h-max h-32 w-full flex items-center justify-center rounded-md text-gray-400 hover:bg-rose-300 hover:text-gray-100"
+      :class="{ 'bg-rose-300': isDragOver }"
       @drag.prevent.stop=""
       @dragstart.prevent.stop=""
       @dragend.prevent.stop="isDragOver = false"
@@ -135,26 +139,24 @@ export default {
     >
       <div
         v-if="url"
-        class="relative hover:after:content-['X'] hover:after:cursor-pointer hover:after:font-bold hover:after:text-xl hover:after:flex hover:after:items-center hover:after:justify-center hover:after:text-gray-400 hover:after:absolute hover:after:m-auto hover:after:h-12 hover:after:w-12 hover:after:bg-slate-200 hover:after:top-0 hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:rounded-full"
+        class="relative hover:after:content-['X'] hover:after:cursor-pointer hover:after:font-bold hover:after:text-xl hover:after:flex hover:after:items-center hover:after:justify-center hover:after:text-gray-100 hover:after:absolute hover:after:m-auto hover:after:h-12 hover:after:w-12 hover:after:bg-rose-300 hover:after:top-0 hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:rounded-full"
         @click.prevent="deleteThumbnail()"
       >
         <img :src="url" alt="profile" class="aspect-square max-h-32" />
       </div>
-      <span v-else class="font-semibold" :class="{ 'text-gray-100': isDragOver }">
-        Add Profile Picture
-      </span>
+      <p v-else class="font-medium" :class="{ 'text-gray-100': isDragOver }">Drag and Drop</p>
     </div>
     <div class="flex flex-col gap-2 w-full">
       <button
-        class="h-12 w-full bg-red-500 rounded-md text-sm font-medium tracking-wider text-white shadow-md outline-none disabled:opacity-75"
-        @click.prevent="handleUpdate"
+        class="bg-gradient-to-r from-rose-400 via-rose-500 to-rose-600 text-gray-300 font-medium tracking-wider h-12 w-full rounded-md shadow-md disabled:bg-gradient-to-r disabled:from-gray-400 disabled:via-gray-500 disabled:to-gray-600 hover:bg-gradient-to-r hover:from-rose-600 hover:via-rose-700 hover:to-rose-800"
+        @click.prevent="updateHandler"
         :disabled="!storageName"
       >
         UPDATE
       </button>
       <button
-        class="h-12 w-full rounded-md text-sm font-medium tracking-wider text-black shadow-md outline-none disabled:opacity-75"
-        @click.prevent="handleCancel"
+        class="font-medium tracking-wider h-12 w-full rounded-md shadow-md hover:bg-gray-100"
+        @click.prevent="cancelHandler"
       >
         CANCEL
       </button>

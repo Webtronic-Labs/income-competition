@@ -50,6 +50,7 @@ export default {
       return this.users.findIndex(({ id }) => id === idToSearch) + 1
     },
     load() {
+      console.log('LOAD!')
       usersCollection
         .orderBy('totalRevenue', 'desc')
         .get()
@@ -59,7 +60,7 @@ export default {
             newUsers.push({ id: doc.id, ...doc.data() })
           })
 
-          this.users = newUsers
+          this.users = [...newUsers]
         })
         .catch((error) => console.log(error))
     }
@@ -72,16 +73,16 @@ export default {
 
 <template>
   <header>
-    <nav class="flex items-center justify-between h-16 p-4 bg-white relative">
+    <nav class="bg-white relative h-16 p-4 flex items-center justify-between text-gray-600">
       <button
-        class="flex items-center justify-center h-8 w-8 rounded-full hover:bg-slate-200"
+        class="flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-300"
         value="MENU"
       >
         <IconMenuCSS />
       </button>
       <h1 class="font-semibold text-xl">Leaderboard</h1>
       <button
-        class="flex items-center justify-center h-8 w-8 rounded-full hover:bg-slate-200"
+        class="flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-300"
         value="OPTION"
         @click.prevent="isOptionsOpen = !isOptionsOpen"
       >
@@ -90,15 +91,18 @@ export default {
       <ProfileMenu v-if="isOptionsOpen" />
     </nav>
   </header>
-  <main class="bg-slate-300 p-2 pb-32 grow">
+  <main class="bg-gray-300 p-2 pb-32 grow text-gray-600">
     <section class="relative bg-white rounded py-6 pl-16">
       <div
-        class="flex items-center justify-center absolute top-0 bottom-0 -left-14 my-auto rounded-md bg-slate-300 h-20 w-20 rotate-45"
+        class="bg-gray-300 absolute top-0 bottom-0 -left-14 my-auto h-20 w-20 rotate-45 flex items-center justify-center rounded-md"
       >
-        <div class="rounded-md bg-red-500 h-16 w-16 relative">
-          <span class="absolute -rotate-45 text-white right-0 top-0 bottom-0 my-auto font-medium">{{
-            getPosition(id)
-          }}</span>
+        <div
+          class="bg-gradient-to-r from-rose-400 via-rose-500 to-rose-600 relative h-16 w-16 rounded-md"
+        >
+          <span
+            class="absolute right-0 top-0 bottom-0 my-auto -rotate-45 text-gray-300 font-medium"
+            >{{ getPosition(id) }}</span
+          >
         </div>
       </div>
       <header class="flex items-center gap-4">
@@ -125,10 +129,10 @@ export default {
       class="relative bg-white rounded py-6 pl-16 mt-2"
     >
       <div
-        class="flex items-center justify-center absolute top-0 bottom-0 -left-14 my-auto rounded-md bg-slate-300 h-20 w-20 rotate-45"
+        class="bg-gray-300 absolute top-0 bottom-0 -left-14 my-auto h-20 w-20 rotate-45 flex items-center justify-center rounded-md"
       >
-        <div class="rounded-md bg-white h-16 w-16 relative">
-          <span class="absolute -rotate-45 text-black right-0 top-0 bottom-0 my-auto font-medium">{{
+        <div class="bg-white relative h-16 w-16 rounded-md">
+          <span class="absolute -rotate-45 right-0 top-0 bottom-0 my-auto font-medium">{{
             getPosition(userToCompare.id)
           }}</span>
         </div>
@@ -188,20 +192,20 @@ export default {
   </main>
   <footer class="bg-slate-900 flex items-center justify-between fixed bottom-0 h-16 w-full px-4">
     <button class="flex items-center justify-center h-8 w-8" value="MENU">
-      <IconHomeSVG class="fill-red-500" />
+      <IconHomeSVG class="fill-rose-600" />
     </button>
     <div
-      class="flex items-center justify-center bg-slate-300 h-20 w-20 rotate-45 rounded-md absolute mx-auto left-0 right-0 bottom-10"
+      class="bg-gray-300 absolute left-0 right-0 bottom-10 rotate-45 mx-auto h-20 w-20 flex items-center justify-center rounded-md"
     >
       <button
-        class="flex items-center justify-center bg-red-500 text-white h-16 w-16 rounded-md relative"
+        class="bg-gradient-to-r from-rose-400 via-rose-500 to-rose-600 relative h-16 w-16 flex items-center justify-center rounded-md text-gray-300"
         @click.prevent="isSaleModalOpen = true"
       >
         <IconPlusCSS class="rotate-45 w-8 h-8" />
       </button>
     </div>
     <button class="flex items-center justify-center h-8 w-8" value="MENU">
-      <IconUserSVG class="fill-red-500" />
+      <IconUserSVG class="fill-rose-600" />
     </button>
   </footer>
 
